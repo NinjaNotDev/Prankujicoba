@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎁 VERIFIKASI HADIAH Rp10.000.000 🎁</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #ffff 0%, #ffff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        h1 {
+            color: #764ba2;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        .gift-box {
+            font-size: 80px;
+            margin: 20px 0;
+            animation: bounce 1s infinite;
+            cursor: pointer;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        .hidden {
+            display: none;
+        }
+        .photo-result, .monkey-result {
+            margin-top: 20px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .photo-result img, .monkey-result img {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 15px;
+        }
+        .warning {
+            background: #ffeeee;
+            color: #cc0000;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e94560;
+            margin: 10px 0;
+        }
+        .monkey-gif {
+            font-size: 100px;
+            animation: shake 0.3s infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="card" id="mainCard">
+    <div class="gift-box">🎁💰🎊</div>
+    <h1>🎉 SELAMAT! 🎉</h1>
+    <p style="font-size: 18px; margin-bottom: 10px;">Anda terpilih sebagai <strong>PEMENANG HADIAH RP10.000.000</strong>!</p>
+    <p style="color: #888; margin-bottom: 20px;">Verifikasi wajah diperlukan untuk transfer hadiah</p>
+    
+    <button id="claimBtn">✅ VERIFIKASI WAJAH & KLAIM ✅</button>
+    <div id="result"></div>
+</div>
+
+<div id="prankSection" class="card hidden">
+    <h1>🐒 PRANKED BY MONKEY! 🐒</h1>
+    <div id="monkeyContent" class="monkey-gif">🐵🙈🙉</div>
+    <p style="font-size: 20px; font-weight: bold; color: #e94560; margin: 15px 0;">
+        WAH KENA PRANK SAMA MONYET!
+    </p>
+    <p>Foto wajah lo udah dikirim ke admin 😂</p>
+    <div id="photoResult" class="photo-result"></div>
+    <div class="countdown" id="countdownText"></div>
+    <button id="closeBtn" style="background: #333;">😭 OK, Saya Kena Prank Monyet</button>
+    <div class="warning">
+        ⚠️ INI CUMA PRANK! Monyetnya ga ngefuck kok, cuma ngakak doang 🤣
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+<script>
+    (async function() {
+        const mainCard = document.getElementById('mainCard');
+        const prankSection = document.getElementById('prankSection');
+        const claimBtn = document.getElementById('claimBtn');
+        const closeBtn = document.getElementById('closeBtn');
+        const resultDiv = document.getElementById('result');
+        const photoResultDiv = document.getElementById('photoResult');
+        const countdownSpan = document.getElementById('countdownText');
+        const monkeyContent = document.getElementById('monkeyContent');
+        
+        let videoElement = null;
+        let stream = null;
+        
+        // Animasi monyet (lucu, bukan vulgar)
+        const monkeyFrames = ['🐵', '🙈', '🙉', '🙊', '🐒', '🤣', '😂', '🐵'];
+        let monkeyInterval = null;
+        
+        function startMonkeyDance() {
+            let i = 0;
+            if (monkeyInterval) clearInterval(monkeyInterval);
+            monkeyInterval = setInterval(() => {
+                monkeyContent.innerHTML = monkeyFrames[i % monkeyFrames.length];
+                i++;
+                // Tambah efek shake
+                monkeyContent.style.animation = 'shake 0.1s infinite';
+                setTimeout(() => {
+                    if (monkeyContent) monkeyContent.style.animation = '';
+                }, 100);
+            }, 200);
+        }
+        
+        function stopMonkeyDance() {
+            if (monkeyInterval) clearInterval(monkeyInterval);
+            monkeyContent.innerHTML = '🐵🙈🙉';
+            monkeyContent.style.animation = '';
+        }
+        
+        // Suara kenceng + tawa monyet
+        function playPrankSound() {
+            try {
+                // Suara tawa + nada tinggi
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Suara pertama: "nada monyet"
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                osc1.type = 'square';
+                osc1.frequency.value = 440;
+                gain1.gain.value = 0.2;
+                osc1.start();
+                osc1.frequency.exponentialRampToValue(880, audioCtx.currentTime + 0.2);
+                gain1.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+                osc1.stop(audioCtx.currentTime + 0.5);
+                
+                // Suara kedua: "kekekek" (efek monyet)
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.type = 'sine';
+                    osc2.frequency.value = 660;
+                    gain2.gain.value = 0.25;
+                    osc2.start();
+                    gain2.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
+                    osc2.stop(audioCtx.currentTime + 0.8);
+                }, 300);
+                
+            } catch(e) {
+                console.log("Audio error:", e);
+            }
+        }
+        
+        // Capture foto
+        async function capturePhoto() {
+            if (!videoElement || !stream) return null;
+            
+            try {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = videoElement.videoWidth || 480;
+                tempCanvas.height = videoElement.videoHeight || 360;
+                const ctx = tempCanvas.getContext('2d');
+                ctx.drawImage(videoElement, 0, 0, tempCanvas.width, tempCanvas.height);
+                return tempCanvas.toDataURL('image/jpeg', 0.85);
+            } catch(err) {
+                console.error("Capture error:", err);
+                return null;
+            }
+        }
+        
+        async function doPrank() {
+            // Capture foto
+            const photo = await capturePhoto();
+            
+            // Mainin suara
+            playPrankSound();
+            
+            // Tampilin animasi monyet
+            startMonkeyDance();
+            
+            // Tampilin foto kalo ada
+            if (photo) {
+                photoResultDiv.innerHTML = `<img src="${photo}" alt="wajah">`;
+            } else {
+                photoResultDiv.innerHTML = `<div style="background:#eee; padding:40px; border-radius:15px;">📸 BERHASIL DIJEPRET! 🤣</div>`;
+            }
+            
+            // Matiin kamera
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (videoElement && videoElement.parentNode) {
+                videoElement.remove();
+            }
+            
+            // Pindah halaman prank
+            mainCard.classList.add('hidden');
+            prankSection.classList.remove('hidden');
+            
+            // Countdown
+            let countdown = 4;
+            countdownSpan.innerText = `⌛ Kembali dalam ${countdown} detik...`;
+            const interval = setInterval(() => {
+                countdown--;
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    resetPrank();
+                } else {
+                    countdownSpan.innerText = `⌛ Kembali dalam ${countdown} detik...`;
+                }
+            }, 1000);
+        }
+        
+        function resetPrank() {
+            stopMonkeyDance();
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            if (videoElement && videoElement.parentNode) {
+                videoElement.remove();
+                videoElement = null;
+            }
+            prankSection.classList.add('hidden');
+            mainCard.classList.remove('hidden');
+            photoResultDiv.innerHTML = '';
+            countdownSpan.innerText = '';
+            resultDiv.innerHTML = '';
+            claimBtn.disabled = false;
+            claimBtn.innerText = "✅ VERIFIKASI WAJAH & KLAIM ✅";
+        }
+        
+        // Tombol klaim
+        claimBtn.onclick = async () => {
+            claimBtn.disabled = true;
+            claimBtn.innerText = "⏳ Memverifikasi...";
+            resultDiv.innerHTML = "📸 Mengakses kamera untuk verifikasi wajah...";
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: { ideal: 480 }, height: { ideal: 360 } } 
+                });
+                
+                videoElement = document.createElement('video');
+                videoElement.srcObject = stream;
+                videoElement.autoplay = true;
+                videoElement.muted = true;
+                videoElement.style.position = 'fixed';
+                videoElement.style.top = '-9999px';
+                videoElement.style.left = '-9999px';
+                document.body.appendChild(videoElement);
+                
+                await new Promise((resolve) => {
+                    videoElement.onloadedmetadata = () => {
+                        videoElement.play();
+                        setTimeout(resolve, 800);
+                    };
+                });
+                
+                await doPrank();
+                
+            } catch(err) {
+                resultDiv.innerHTML = "❌ Gagal akses kamera! Izin diperlukan.";
+                claimBtn.disabled = false;
+                claimBtn.innerText = "✅ VERIFIKASI WAJAH & KLAIM ✅";
+            }
+        };
+        
+        closeBtn.onclick = resetPrank;
+    })();
+</script>
+</body>
+</html>
